@@ -3,16 +3,22 @@ import subprocess
 
 def start_simulation():
     try:
-        n_clients = int(entry.get())
+        n_clients = int(entry_clients.get())
         if n_clients < 1:
             raise ValueError("El número de clientes debe ser al menos 1")
+        
+        client_names = entry_names.get().split(',') if entry_names.get() else []
+        
+        if len(client_names) != 0 and len(client_names) != n_clients:
+            raise ValueError(f"Debe ingresar {n_clients} nombres separados por comas o dejar el campo vacío para nombres automáticos.")
         
         # Inicia el servidor
         subprocess.Popen(['python', 'chat_server.py'])
         
-        # Inicia los clientes
+        # Inicia los clientes con nombres
         for i in range(n_clients):
-            subprocess.Popen(['python', 'chat_client.py'])
+            client_name = client_names[i] if client_names else f"Cliente {i + 1}"
+            subprocess.Popen(['python', 'chat_client.py', client_name])
         
         status_label.config(text=f"Simulación iniciada con {n_clients} clientes.", fg="green")
     except ValueError as e:
@@ -21,7 +27,7 @@ def start_simulation():
 # Configuración de la ventana principal
 root = tk.Tk()
 root.title("Simulador de Chat Grupal")
-root.geometry("400x300")
+root.geometry("400x350")
 root.configure(bg="#1e1e1e")  # Fondo oscuro
 
 # Estilos
@@ -38,8 +44,16 @@ instruction_label = tk.Label(root, text="Ingrese el número de clientes a simula
 instruction_label.pack(pady=10)
 
 # Campo de entrada para el número de clientes
-entry = tk.Entry(root, font=entry_font, width=10, justify="center")
-entry.pack(pady=10)
+entry_clients = tk.Entry(root, font=entry_font, width=10, justify="center")
+entry_clients.pack(pady=10)
+
+# Instrucciones para nombres de los clientes
+instruction_names = tk.Label(root, text="Opcional: Ingrese los nombres de los clientes separados por comas", font=label_font, bg="#1e1e1e", fg="white")
+instruction_names.pack(pady=10)
+
+# Campo de entrada para los nombres de los clientes
+entry_names = tk.Entry(root, font=entry_font, width=30, justify="center")
+entry_names.pack(pady=10)
 
 # Botón para iniciar la simulación
 start_button = tk.Button(root, text="Iniciar Simulación", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=20, command=start_simulation)

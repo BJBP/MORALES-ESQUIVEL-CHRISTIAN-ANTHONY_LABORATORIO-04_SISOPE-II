@@ -1,9 +1,12 @@
 import socket
 import threading
 import tkinter as tk
+import sys
+import time
 
 HOST = '127.0.0.1'
 PORT = 65432
+client_name = sys.argv[1] if len(sys.argv) > 1 else "Cliente Desconocido"
 
 # Simple encryption (for demonstration purposes only - NOT SECURE for real-world use)
 def encrypt(message):
@@ -34,9 +37,11 @@ def receive_messages():
 def send_message():
     message = entry.get()
     if message:
-        encrypted_message = encrypt(message)
+        timestamp = time.strftime("%H:%M:%S", time.localtime())
+        formatted_message = f"Tú: {message} \n{timestamp.rjust(50)}"  # Alinea la hora a la derecha
+        encrypted_message = encrypt(f"[{timestamp}] {client_name}: {message}")
         client_socket.send(encrypted_message.encode())
-        message_list.insert(tk.END, f"Tú: {message}")
+        message_list.insert(tk.END, formatted_message)
         message_list.see(tk.END)
         entry.delete(0, tk.END)
 
@@ -46,7 +51,7 @@ client_socket.connect((HOST, PORT))
 
 # GUI setup
 root = tk.Tk()
-root.title("Cliente de Chat")
+root.title(f"Chat - {client_name}")
 root.geometry("400x500")
 root.configure(bg="#1e1e1e")
 
