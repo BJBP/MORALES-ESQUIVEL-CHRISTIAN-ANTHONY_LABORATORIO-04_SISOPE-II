@@ -33,7 +33,7 @@ def request_client_names(n_clients):
     start_button.pack(pady=20)
 
     global status_label
-    status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white")
+    status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white", wraplength=350)  # Ajuste para mensajes largos
     status_label.pack(pady=10)
 
 def get_client_count():
@@ -73,7 +73,7 @@ start_button = tk.Button(root, text="Siguiente", font=button_font, bg="#4caf50",
 start_button.pack(pady=20)
 
 # Etiqueta para mostrar mensajes de estado
-status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white")
+status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white", wraplength=350)  # Ajuste para evitar desbordes
 status_label.pack(pady=10)
 
 root.mainloop()
