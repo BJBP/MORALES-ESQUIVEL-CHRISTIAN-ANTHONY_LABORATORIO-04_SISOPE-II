@@ -40,8 +40,8 @@ def display_message(message, sender=False):
     actual_message = message_parts[1].strip()
 
     # Cuadro para el mensaje
-    message_frame = tk.Frame(message_list_frame, bg="#333333")
-    message_frame.pack(fill='x', pady=5, padx=10, anchor='w' if not sender else 'e')
+    message_frame = tk.Frame(messages_frame, bg="#333333")
+    message_frame.pack(fill='x', pady=5)
 
     # Mostrar nombre alineado a la izquierda (o "Yo" si es el mensaje del propio cliente)
     name_label = tk.Label(message_frame, text=sender_name if not sender else "Yo", bg="#333333", fg="#4caf50", font=("Helvetica", 10, "bold"), anchor="w")
@@ -54,6 +54,9 @@ def display_message(message, sender=False):
     # Mostrar la hora siempre alineada a la derecha
     time_label = tk.Label(message_frame, text=timestamp, bg="#333333", fg="white", font=("Helvetica", 10))
     time_label.pack(side='right', padx=5)
+
+    # Actualizar la barra de desplazamiento
+    messages_canvas.yview_moveto(1)
 
 def send_message():
     message = entry.get()
@@ -81,9 +84,25 @@ label_font = ("Helvetica", 12, "bold")
 entry_font = ("Helvetica", 12)
 button_font = ("Helvetica", 12, "bold")
 
-# Frame para mostrar los mensajes
-message_list_frame = tk.Frame(root, bg="#1e1e1e")
-message_list_frame.pack(fill='both', expand=True, pady=10)
+# Frame principal
+main_frame = tk.Frame(root)
+main_frame.pack(fill='both', expand=True)
+
+# Canvas para la barra de desplazamiento
+messages_canvas = tk.Canvas(main_frame, bg="#1e1e1e")
+scrollbar = tk.Scrollbar(main_frame, command=messages_canvas.yview)
+scrollbar.pack(side="right", fill="y")
+
+messages_frame = tk.Frame(messages_canvas, bg="#1e1e1e")
+
+# Función para actualizar el scroll
+def on_configure(event):
+    messages_canvas.configure(scrollregion=messages_canvas.bbox("all"))
+
+messages_frame.bind("<Configure>", on_configure)
+messages_canvas.create_window((0, 0), window=messages_frame, anchor="nw")
+messages_canvas.pack(side="left", fill="both", expand=True)
+messages_canvas.configure(yscrollcommand=scrollbar.set)
 
 # Campo de entrada para mensajes
 entry = tk.Entry(root, font=entry_font, width=30, bg="#2e2e2e", fg="white")
