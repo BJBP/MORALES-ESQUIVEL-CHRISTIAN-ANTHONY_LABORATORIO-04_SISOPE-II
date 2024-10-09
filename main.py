@@ -7,6 +7,10 @@ import signal
 processes = []
 
 def start_simulation(n_clients, group_name):
+    if not group_name:
+        status_label.config(text="Error: Debe ingresar un nombre para el grupo.", fg="red")
+        return
+
     client_names = entry_names.get().split(',') if entry_names.get() else []
 
     if len(client_names) != 0 and len(client_names) != n_clients:
@@ -55,7 +59,8 @@ def request_client_names():
         entry_names = tk.Entry(root, font=entry_font, width=30, justify="center")
         entry_names.pack(pady=10)
 
-        start_button = tk.Button(root, text="Iniciar Simulación", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=20, command=lambda: start_simulation(n_clients, entry_group_name.get()))
+        start_button = tk.Button(root, text="Iniciar Simulación", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=20,
+                                 command=lambda: start_simulation(n_clients, entry_group_name.get()))
         start_button.pack(pady=20)
 
         stop_button = tk.Button(root, text="Finalizar Simulación", font=button_font, bg="#f44336", fg="white", activebackground="#e53935", width=20, command=stop_simulation)
