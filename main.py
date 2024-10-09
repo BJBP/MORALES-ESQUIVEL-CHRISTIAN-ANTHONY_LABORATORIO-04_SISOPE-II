@@ -6,29 +6,24 @@ import signal
 # Lista para almacenar los procesos de la simulación
 processes = []
 
-def start_simulation():
-    try:
-        n_clients = int(entry_clients.get())
-        group_name = entry_group_name.get()
-        client_names = entry_names.get().split(',') if entry_names.get() else []
+def start_simulation(n_clients, group_name):
+    client_names = entry_names.get().split(',') if entry_names.get() else []
 
-        if len(client_names) != 0 and len(client_names) != n_clients:
-            status_label.config(text=f"Error: Debe ingresar {n_clients} nombres separados por comas o dejar el campo vacío para nombres automáticos.", fg="red")
-            return
+    if len(client_names) != 0 and len(client_names) != n_clients:
+        status_label.config(text=f"Error: Debe ingresar {n_clients} nombres separados por comas o dejar el campo vacío para nombres automáticos.", fg="red")
+        return
 
-        # Inicia el servidor
-        server_process = subprocess.Popen(['python', 'chat_server.py'])
-        processes.append(server_process)  # Almacena el proceso del servidor
+    # Inicia el servidor
+    server_process = subprocess.Popen(['python', 'chat_server.py'])
+    processes.append(server_process)  # Almacena el proceso del servidor
 
-        # Inicia los clientes con nombres
-        for i in range(n_clients):
-            client_name = client_names[i] if client_names else f"Cliente {i + 1}"
-            client_process = subprocess.Popen(['python', 'chat_client.py', client_name, group_name])
-            processes.append(client_process)  # Almacena los procesos de los clientes
+    # Inicia los clientes con nombres
+    for i in range(n_clients):
+        client_name = client_names[i] if client_names else f"Cliente {i + 1}"
+        client_process = subprocess.Popen(['python', 'chat_client.py', client_name, group_name])
+        processes.append(client_process)  # Almacena los procesos de los clientes
 
-        status_label.config(text=f"Simulación del grupo '{group_name}' iniciada con {n_clients} clientes.", fg="green")
-    except ValueError as e:
-        status_label.config(text=f"Error: {e}", fg="red")
+    status_label.config(text=f"Simulación del grupo '{group_name}' iniciada con {n_clients} clientes.", fg="green")
 
 def stop_simulation():
     # Termina todos los procesos almacenados
@@ -43,6 +38,9 @@ def request_client_names():
             raise ValueError("El número de clientes debe ser al menos 1")
 
         # Limpiar y mostrar el campo para nombres y el botón de simulación
+        for widget in root.winfo_children():
+            widget.destroy()
+
         instruction_group = tk.Label(root, text="Ingrese el nombre del grupo:", font=label_font, bg="#1e1e1e", fg="white")
         instruction_group.pack(pady=10)
 
@@ -57,7 +55,7 @@ def request_client_names():
         entry_names = tk.Entry(root, font=entry_font, width=30, justify="center")
         entry_names.pack(pady=10)
 
-        start_button = tk.Button(root, text="Iniciar Simulación", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=20, command=start_simulation)
+        start_button = tk.Button(root, text="Iniciar Simulación", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=20, command=lambda: start_simulation(n_clients, entry_group_name.get()))
         start_button.pack(pady=20)
 
         stop_button = tk.Button(root, text="Finalizar Simulación", font=button_font, bg="#f44336", fg="white", activebackground="#e53935", width=20, command=stop_simulation)
@@ -66,10 +64,6 @@ def request_client_names():
         global status_label
         status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white", wraplength=350)
         status_label.pack(pady=10)
-
-        # Ajusta el tamaño de la ventana para acomodar los nuevos widgets
-        root.update_idletasks()  # Actualiza las tareas pendientes para calcular el tamaño correcto
-        root.geometry(f"{root.winfo_width()}x{root.winfo_height() + 200}")  # Incrementa el tamaño de la ventana
 
     except ValueError as e:
         status_label.config(text=f"Error: {e}", fg="red")
