@@ -41,13 +41,13 @@ def display_message(message, sender=False):
 
     # Cuadro para el mensaje
     message_frame = tk.Frame(message_list_frame, bg="#333333")
-    message_frame.pack(fill='x', pady=5, padx=10, anchor='w' if sender else 'e')
+    message_frame.pack(fill='x', pady=5, padx=10, anchor='w' if not sender else 'e')
 
-    # Mostrar nombre alineado a la izquierda
-    name_label = tk.Label(message_frame, text=sender_name, bg="#333333", fg="#4caf50", font=("Helvetica", 10, "bold"), anchor="w")
+    # Mostrar nombre alineado a la izquierda (o "Yo" si es el mensaje del propio cliente)
+    name_label = tk.Label(message_frame, text=sender_name if not sender else "Yo", bg="#333333", fg="#4caf50", font=("Helvetica", 10, "bold"), anchor="w")
     name_label.pack(fill="x", side="top", padx=5)
 
-    # Mostrar mensaje
+    # Mostrar mensaje alineado a la izquierda
     message_label = tk.Label(message_frame, text=actual_message, wraplength=300, bg="#333333", fg="white", font=entry_font, justify="left", anchor="w")
     message_label.pack(fill="x", side="top", padx=5)
 
@@ -60,9 +60,9 @@ def send_message():
     if message:
         timestamp = time.strftime("%H:%M:%S", time.localtime())
         formatted_message_for_self = f"{client_name}: {message} {timestamp}"  # Formato para el propio cliente
-        encrypted_message_for_server = encrypt(message)  # Solo envía el mensaje sin el prefijo "Tú:"
+        encrypted_message_for_server = encrypt(f"{client_name}: {message}")  # Solo envía el mensaje
         client_socket.send(encrypted_message_for_server.encode())
-        display_message(formatted_message_for_self, sender=True)
+        display_message(formatted_message_for_self, sender=True)  # Marca que es el mensaje del propio cliente
         entry.delete(0, tk.END)
 
 # Client setup
