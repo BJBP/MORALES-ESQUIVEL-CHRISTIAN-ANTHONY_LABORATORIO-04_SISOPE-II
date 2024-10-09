@@ -34,7 +34,7 @@ def handle_client(client_socket, client_address, client_name):
                 break
             decrypted_data = decrypt(data)
             timestamp = time.strftime("%H:%M:%S", time.localtime())
-            broadcast_message = f"{client_name}: {decrypted_data}  {timestamp.rjust(50)}"
+            broadcast_message = f" {decrypted_data}  {timestamp.rjust(50)}"
             print(f"Received from {client_name}: {decrypted_data}")
             # Broadcast to other clients
             for c in clients:
