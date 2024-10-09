@@ -67,6 +67,10 @@ def request_client_names():
         status_label = tk.Label(root, text="", font=label_font, bg="#1e1e1e", fg="white", wraplength=350)
         status_label.pack(pady=10)
 
+        # Ajusta el tamaño de la ventana para acomodar los nuevos widgets
+        root.update_idletasks()  # Actualiza las tareas pendientes para calcular el tamaño correcto
+        root.geometry(f"{root.winfo_width()}x{root.winfo_height() + 200}")  # Incrementa el tamaño de la ventana
+
     except ValueError as e:
         status_label.config(text=f"Error: {e}", fg="red")
 
