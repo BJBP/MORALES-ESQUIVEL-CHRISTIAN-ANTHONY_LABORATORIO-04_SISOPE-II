@@ -7,6 +7,7 @@ import time
 HOST = '127.0.0.1'
 PORT = 65432
 client_name = sys.argv[1] if len(sys.argv) > 1 else "Cliente Desconocido"
+group_name = sys.argv[2] if len(sys.argv) > 2 else "Grupo Desconocido"
 
 # Simple encryption (for demonstration purposes only - NOT SECURE for real-world use)
 def encrypt(message):
@@ -34,13 +35,21 @@ def receive_messages():
 
 def display_message(message, sender=False):
     message_text, timestamp = message.rsplit(' ', 1)  # Separa el mensaje del timestamp
+    message_parts = message_text.split(':', 1)  # Separar nombre del mensaje
+    sender_name = message_parts[0]
+    actual_message = message_parts[1].strip()
+
     # Cuadro para el mensaje
     message_frame = tk.Frame(message_list_frame, bg="#333333")
     message_frame.pack(fill='x', pady=5, padx=10, anchor='w' if sender else 'e')
 
+    # Mostrar nombre alineado a la izquierda
+    name_label = tk.Label(message_frame, text=sender_name, bg="#333333", fg="#4caf50", font=("Helvetica", 10, "bold"), anchor="w")
+    name_label.pack(fill="x", side="top", padx=5)
+
     # Mostrar mensaje
-    message_label = tk.Label(message_frame, text=message_text, wraplength=300, bg="#333333", fg="white", font=entry_font)
-    message_label.pack(side='left', padx=5)
+    message_label = tk.Label(message_frame, text=actual_message, wraplength=300, bg="#333333", fg="white", font=entry_font, justify="left", anchor="w")
+    message_label.pack(fill="x", side="top", padx=5)
 
     # Mostrar la hora siempre alineada a la derecha
     time_label = tk.Label(message_frame, text=timestamp, bg="#333333", fg="white", font=("Helvetica", 10))
@@ -50,7 +59,7 @@ def send_message():
     message = entry.get()
     if message:
         timestamp = time.strftime("%H:%M:%S", time.localtime())
-        formatted_message_for_self = f"Tú: {message} {timestamp}"  # Formato para el propio cliente
+        formatted_message_for_self = f"{client_name}: {message} {timestamp}"  # Formato para el propio cliente
         encrypted_message_for_server = encrypt(message)  # Solo envía el mensaje sin el prefijo "Tú:"
         client_socket.send(encrypted_message_for_server.encode())
         display_message(formatted_message_for_self, sender=True)
@@ -63,7 +72,7 @@ client_socket.send(client_name.encode())  # Send the client name to the server
 
 # GUI setup
 root = tk.Tk()
-root.title(f"Chat - {client_name}")
+root.title(f"Chat - {client_name} en {group_name}")
 root.geometry("400x500")
 root.configure(bg="#1e1e1e")
 

@@ -1,0 +1,7 @@
+1.Ejecutar el archivo "main.py"
+
+2.Ingresar el numero de clientes que se usaran para la simulación del chat Grupal
+
+3.Opcional: Ingresar los nombres ficticios de los clientes o miembros del chat separados por comas
+
+4.Mandar mensajes entres las ventanas de los diferentes clientes
