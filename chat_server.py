@@ -49,11 +49,17 @@ def handle_client(client_socket, client_address, client_name):
                 break
             decrypted_data = decrypt(data)
             timestamp = time.strftime("%H:%M:%S", time.localtime())
+            
+            try:
+                message_content = decrypted_data.split(":", 1)[1].strip() # Extraer solo el mensaje
+            except IndexError:
+                message_content = decrypted_data # Manejar el caso donde no hay ":"
+
             broadcast_message = f" {decrypted_data}  {timestamp.rjust(50)}"
             print(f"Received from {client_name}: {decrypted_data}")
             
             # Store message in database
-            cursor.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)", (client_name, decrypted_data, timestamp))
+            cursor.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)", (client_name, message_content, timestamp)) # Guardar solo el mensaje
             conn.commit()
 
             # Broadcast to other clients
@@ -70,7 +76,7 @@ def handle_client(client_socket, client_address, client_name):
 def accept_connections():
     while True:
         client_socket, client_address = server_socket.accept()
-        client_name = client_socket.recv(1024).decode()  # Receive the client name during connection
+        client_name = client_socket.recv(1024).decode()
         clients.append(client_socket)
         client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address, client_name))
         client_thread.start()
