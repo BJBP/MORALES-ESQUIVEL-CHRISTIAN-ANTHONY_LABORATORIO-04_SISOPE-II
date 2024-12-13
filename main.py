@@ -38,7 +38,7 @@ def start_simulation(n_clients, group_name):
 def stop_simulation():
     # Termina todos los procesos almacenados
     for process in processes:
-        os.kill(process.pid, signal.SIGTERM)
+        process.terminate()
     status_label.config(text="Simulación finalizada. Todas las ventanas han sido cerradas.", fg="red")
 
 def request_client_names():
