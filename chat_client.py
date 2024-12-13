@@ -3,11 +3,14 @@ import threading
 import tkinter as tk
 import sys
 import time
+import sqlite3
+import random
 
 HOST = '127.0.0.1'
-PORT = 65432
+# PORT = 65432 # Removed, ports will be passed as argument
 client_name = sys.argv[1] if len(sys.argv) > 1 else "Cliente Desconocido"
 group_name = sys.argv[2] if len(sys.argv) > 2 else "Grupo Desconocido"
+server_ports = sys.argv[3].split(',') if len(sys.argv) > 3 else ["65432"] # Get ports from argument
 
 # Simple encryption (for demonstration purposes only - NOT SECURE for real-world use)
 def encrypt(message):
@@ -34,10 +37,15 @@ def receive_messages():
             break
 
 def display_message(message, sender=False):
-    message_text, timestamp = message.rsplit(' ', 1)  # Separa el mensaje del timestamp
-    message_parts = message_text.split(':', 1)  # Separar nombre del mensaje
-    sender_name = message_parts[0]
-    actual_message = message_parts[1].strip()
+    if isinstance(message, tuple):
+        sender_name, actual_message, timestamp = message
+        formatted_message = f"{sender_name}: {actual_message} {timestamp}"
+    else:
+        message_text, timestamp = message.rsplit(' ', 1)  # Separa el mensaje del timestamp
+        message_parts = message_text.split(':', 1)  # Separar nombre del mensaje
+        sender_name = message_parts[0]
+        actual_message = message_parts[1].strip()
+        formatted_message = f"{sender_name}: {actual_message} {timestamp}"
 
     # Cuadro para el mensaje
     message_frame = tk.Frame(messages_frame, bg="#333333")
@@ -70,8 +78,24 @@ def send_message():
 
 # Client setup
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((HOST, PORT))
+# Try to connect to any of the available servers
+for port in server_ports:
+    try:
+        client_socket.connect((HOST, int(port)))
+        print(f"Connected to server on port {port}")
+        break
+    except:
+        print(f"Could not connect to server on port {port}")
+        continue
+else:
+    print("Could not connect to any server")
+    sys.exit()
+
 client_socket.send(client_name.encode())  # Send the client name to the server
+
+# Database setup
+conn = sqlite3.connect('chat_history.db', check_same_thread=False)
+cursor = conn.cursor()
 
 # GUI setup
 root = tk.Tk()
@@ -111,6 +135,12 @@ entry.pack(pady=10)
 # Botón de enviar
 send_button = tk.Button(root, text="Enviar", font=button_font, bg="#4caf50", fg="white", activebackground="#45a049", width=15, command=send_message)
 send_button.pack(pady=10)
+
+# Load chat history
+cursor.execute("SELECT sender, message, timestamp FROM messages")
+chat_history = cursor.fetchall()
+for message in chat_history:
+    display_message(message)
 
 # Hilo para recibir mensajes
 receive_thread = threading.Thread(target=receive_messages)

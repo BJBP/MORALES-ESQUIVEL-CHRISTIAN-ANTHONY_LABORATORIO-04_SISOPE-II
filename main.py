@@ -2,9 +2,11 @@ import tkinter as tk
 import subprocess
 import os
 import signal
+import random
 
 # Lista para almacenar los procesos de la simulación
 processes = []
+server_ports = []
 
 def start_simulation(n_clients, group_name):
     if not group_name:
@@ -17,17 +19,21 @@ def start_simulation(n_clients, group_name):
         status_label.config(text=f"Error: Debe ingresar {n_clients} nombres separados por comas o dejar el campo vacío para nombres automáticos.", fg="red")
         return
 
-    # Inicia el servidor
-    server_process = subprocess.Popen(['python', 'chat_server.py'])
-    processes.append(server_process)  # Almacena el proceso del servidor
+    # Inicia múltiples servidores
+    n_servers = 3  # Número de servidores a simular
+    for i in range(n_servers):
+        port = 65432 + i
+        server_ports.append(port)
+        server_process = subprocess.Popen(['python', 'chat_server.py', str(port)])
+        processes.append(server_process)  # Almacena el proceso del servidor
 
     # Inicia los clientes con nombres
     for i in range(n_clients):
         client_name = client_names[i] if client_names else f"Cliente {i + 1}"
-        client_process = subprocess.Popen(['python', 'chat_client.py', client_name, group_name])
+        client_process = subprocess.Popen(['python', 'chat_client.py', client_name, group_name, ','.join(map(str, server_ports))])
         processes.append(client_process)  # Almacena los procesos de los clientes
 
-    status_label.config(text=f"Simulación del grupo '{group_name}' iniciada con {n_clients} clientes.", fg="green")
+    status_label.config(text=f"Simulación del grupo '{group_name}' iniciada con {n_clients} clientes y {n_servers} servidores.", fg="green")
 
 def stop_simulation():
     # Termina todos los procesos almacenados

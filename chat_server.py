@@ -2,11 +2,13 @@ import socket
 import threading
 import tkinter as tk
 import time
+import sqlite3
+import sys
 
 client_count = 0
 
 HOST = '127.0.0.1'
-PORT = 65432
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 65432 # Get port from argument
 
 # Simple encryption (for demonstration purposes only - NOT SECURE for real-world use)
 def encrypt(message):
@@ -20,6 +22,19 @@ def decrypt(message):
     for char in message:
         decrypted += chr(ord(char) - 1)
     return decrypted
+
+# Database setup
+conn = sqlite3.connect('chat_history.db', check_same_thread=False)
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender TEXT,
+        message TEXT,
+        timestamp TEXT
+    )
+''')
+conn.commit()
 
 def handle_client(client_socket, client_address, client_name):
     global client_count
@@ -36,6 +51,11 @@ def handle_client(client_socket, client_address, client_name):
             timestamp = time.strftime("%H:%M:%S", time.localtime())
             broadcast_message = f" {decrypted_data}  {timestamp.rjust(50)}"
             print(f"Received from {client_name}: {decrypted_data}")
+            
+            # Store message in database
+            cursor.execute("INSERT INTO messages (sender, message, timestamp) VALUES (?, ?, ?)", (client_name, decrypted_data, timestamp))
+            conn.commit()
+
             # Broadcast to other clients
             for c in clients:
                 if c != client_socket:
